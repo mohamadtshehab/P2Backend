@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-
 class Texture(models.Model):
     name = models.CharField('Texture Name', max_length=150)
     image = models.ImageField(upload_to='images/')
