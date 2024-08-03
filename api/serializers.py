@@ -1,11 +1,6 @@
 from rest_framework import serializers
 from .models import *
 
-
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = '__all__'
         
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +20,12 @@ class CategorySerializer(serializers.ModelSerializer):
 class TDModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = TDModel
+        fields = '__all__'
+        
+class RoomSerializer(serializers.ModelSerializer):
+    td_model = TDModelSerializer()
+    class Meta:
+        model = Room
         fields = '__all__'
         
 class ObjectImageSerializer(serializers.ModelSerializer):
