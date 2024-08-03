@@ -22,12 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(validated_data['password'])
             validated_data.pop('password')
         return super().update(instance, validated_data)
-    
-
-class TextureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Texture
-        fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,7 +41,7 @@ class RoomSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         td_model_data = validated_data.pop('td_model')
-        td_model, created = TDModel.objects.get_or_create(**td_model_data)
+        td_model = TDModel.objects.create(**td_model_data)
         room = Room.objects.create(td_model=td_model, **validated_data)
         return room
         
@@ -57,7 +51,6 @@ class ObjectImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class ObjectSerializer(serializers.ModelSerializer):
-    textures = TextureSerializer(many=True)
     td_model = TDModelSerializer()
     class Meta:
         model = Object
@@ -65,6 +58,15 @@ class ObjectSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         td_model_data = validated_data.pop('td_model')
-        td_model, created = TDModel.objects.get_or_create(**td_model_data)
-        object = Object.objects.create(td_model=td_model, **validated_data)
-        return object
+        td_model = TDModel.objects.create(**td_model_data)
+        
+        object_instance = Object.objects.create(td_model=td_model, **validated_data)
+        
+        return object_instance
+    
+
+class TextureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Texture
+        fields = '__all__'
+        

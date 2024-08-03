@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import datetime
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-3rujxnt61=u450vul)sq-rbytl!@1$xm6#w99btjk#nm-)r&(_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['8f8d-169-150-196-104.ngrok-free.app',]
+ALLOWED_HOSTS = ['30f1-169-150-196-137.ngrok-free.app']
 
 
 # Application definition
@@ -159,4 +160,9 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     "EXCEPTION_HANDLER": "api.exceptions.custom_exception_handler",
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(hours=24),
 }

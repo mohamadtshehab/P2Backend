@@ -28,6 +28,21 @@ class ObjectListView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RoomListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        rooms = Room.objects.all()
+        serializer = RoomSerializer(rooms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        serializer = RoomSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserRoomListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -72,17 +87,3 @@ class ObjectImageListView(APIView):
         images = ObjectImage.objects.filter(object=objectId)
         serializer = ObjectImageSerializer(images, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-class RoomListView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        rooms = Room.objects.all()
-        serializer = RoomSerializer(rooms, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def post(self, request):
-        serializer = RoomSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -37,6 +37,13 @@ class TextureFactory(DjangoModelFactory):
 
     name = Faker('word')
     image = Faker('image_url')
+    
+    @lazy_attribute
+    def object(self):
+        all_objects = Object.objects.all()
+        if len(all_objects) == 0:
+            return ObjectFactory()
+        return random.choice(all_objects)
 
 
 class CategoryFactory(DjangoModelFactory):
@@ -96,20 +103,7 @@ class ObjectFactory(DjangoModelFactory):
             return RoomFactory()
         return random.choice(all_rooms)
 
-    url = Faker('image_url')
-
-    @post_generation
-    def textures(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for texture in extracted:
-                self.textures.add(texture)
-        else:
-            for _ in range(3):
-                self.textures.add(TextureFactory())
-
+    file = Faker('image_url')
     material = Faker('image_url')
 
 
@@ -124,7 +118,7 @@ class ObjectImageFactory(DjangoModelFactory):
             return ObjectFactory()
         return random.choice(all_objects)
 
-    url = Faker('image_url')
+    image = Faker('image_url')
 
 class FactoryLauncher:
 

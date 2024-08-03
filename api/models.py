@@ -1,12 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-class Texture(models.Model):
-    name = models.CharField('Texture Name', max_length=150)
-    image = models.ImageField(upload_to='images/')
-    
-    def __str__(self):
-        return self.name
+
 class TDModel(models.Model):
     TYPE_CHOICES = [('room', 'Room'),
                     ('object', 'Object'),]
@@ -34,17 +29,21 @@ class Object(models.Model):
     td_model = models.OneToOneField(TDModel, on_delete=models.CASCADE, primary_key=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    url = models.FileField(upload_to='objects/')
+    file = models.FileField(upload_to='objects/')
     material = models.FileField(upload_to='objects/materials/')
-    textures = models.ManyToManyField(Texture, null=True)
     
     
 class ObjectImage(models.Model):
     object = models.ForeignKey(Object, on_delete=models.CASCADE)
-    url = models.ImageField(upload_to='objects/images/')
+    image = models.ImageField(upload_to='objects/images/')
 
-
-
+class Texture(models.Model):
+    name = models.CharField('Texture Name', max_length=150)
+    image = models.ImageField(upload_to='textures/')
+    object = models.ForeignKey(Object, on_delete=models.CASCADE, default=1)
+    def __str__(self):
+        return self.name
+    
     
 
     
