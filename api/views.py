@@ -6,7 +6,7 @@ from .serializers import *
 from .models import *
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 class ObjectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -21,7 +21,7 @@ class ObjectView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class ObjectListView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = ObjectSerializer(data=request.data)
         if serializer.is_valid():
@@ -53,11 +53,18 @@ class UserView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request, userId):
+    def get(self, request):
+        self.permission_classes = [IsAuthenticated]
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ObjectImageListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -67,7 +74,7 @@ class ObjectImageListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RoomListView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         rooms = Room.objects.all()
         serializer = RoomSerializer(rooms, many=True)

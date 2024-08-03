@@ -3,9 +3,26 @@ from .models import *
 
         
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True)
+
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['username', 'password', 'email']
+
+    def create(self, validated_data):
+        user = User(
+            username=validated_data['username'],
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+            validated_data.pop('password')
+        return super().update(instance, validated_data)
+    
 
 class TextureSerializer(serializers.ModelSerializer):
     class Meta:
