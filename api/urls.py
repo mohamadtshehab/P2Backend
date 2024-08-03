@@ -14,5 +14,6 @@ urlpatterns = [
     path('rooms/<int:roomId>/objects', views.RoomObjectListView.as_view(), name='room_object_list'),
     path('users/<int:userId>', views.UserView.as_view(), name='user_detail'),
     path('users', views.UserListView.as_view(), name='user_list'),
-    path('objects/<int:objectId>/images', views.ObjectImageListView.as_view(), name='object_image_list')
+    path('objects/<int:objectId>/images', views.ObjectImageListView.as_view(), name='object_image_list'),
+    path('rooms', views.RoomListView.as_view(), name='room_list'),
 ]

@@ -27,6 +27,12 @@ class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = '__all__'
+    
+    def create(self, validated_data):
+        td_model_data = validated_data.pop('td_model')
+        td_model, created = TDModel.objects.get_or_create(**td_model_data)
+        room = Room.objects.create(td_model=td_model, **validated_data)
+        return room
         
 class ObjectImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,3 +45,9 @@ class ObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Object
         fields = '__all__'
+    
+    def create(self, validated_data):
+        td_model_data = validated_data.pop('td_model')
+        td_model, created = TDModel.objects.get_or_create(**td_model_data)
+        object = Object.objects.create(td_model=td_model, **validated_data)
+        return object
