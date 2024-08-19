@@ -87,3 +87,6 @@ class ObjectImageListView(APIView):
         images = ObjectImage.objects.filter(object=objectId)
         serializer = ObjectImageSerializer(images, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class predict(APIView):
+    permission_classes = [IsAuthenticated]
