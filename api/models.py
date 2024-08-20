@@ -29,8 +29,8 @@ class Object(models.Model):
     td_model = models.OneToOneField(TDModel, on_delete=models.CASCADE, primary_key=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    file = models.FileField(upload_to='objects/')
-    material = models.FileField(upload_to='objects/materials/')
+    file = models.FilePathField()
+    material = models.FilePathField()
     
     
 class ObjectImage(models.Model):

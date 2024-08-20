@@ -1,10 +1,17 @@
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view
 from .serializers import *
 from .models import *
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import FileUploadParser
+import requests
+import base64
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from p2.settings import NGROK_URL
+
+
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import *
