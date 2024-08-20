@@ -2,8 +2,10 @@ from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
-    TokenRefreshView,
+    TokenRefreshView
 )
+
+from api.views import (ImageUploadView, hi)
 
 urlpatterns = [
     path('token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -16,4 +18,6 @@ urlpatterns = [
     path('users', views.UserListView.as_view(), name='user_list'),
     path('objects/<int:objectId>/images', views.ObjectImageListView.as_view(), name='object_image_list'),
     path('rooms', views.RoomListView.as_view(), name='room_list'),
+    path('rooms/<int:room_id>/predict', ImageUploadView.as_view(), name='upload_image'),
+    path('hi', hi.as_view(), name='hi')
 ]
