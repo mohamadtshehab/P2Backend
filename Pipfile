@@ -13,9 +13,10 @@ mysqlclient = "*"
 factory-boy = "*"
 django-extensions = "*"
 graphviz = "*"
-dotplus = "*"
-
-[dev-packages]
+requests = "*"
+httpx = "*"
 
 [requires]
 python_version = "3.11"
+
+[dev-packages]

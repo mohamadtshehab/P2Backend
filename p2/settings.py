@@ -79,15 +79,10 @@ WSGI_APPLICATION = 'p2.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'p2',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'p2.db',
     }
 }
 
@@ -162,3 +157,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(hours=2),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(hours=24),
 }
+
+NGROK_URL = ALLOWED_HOSTS[0]
