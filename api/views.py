@@ -7,11 +7,11 @@ from .models import *
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
-
+from .permissions import *
 class ObjectView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, pk):
-        object = Object.objects.get(td_model=pk)
+        object = get_object_or_404(Object, td_model=pk)
         serializer = ObjectSerializer(object)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -21,7 +21,7 @@ class ObjectView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class ObjectListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = ObjectSerializer(data=request.data)
         if serializer.is_valid():
@@ -31,7 +31,7 @@ class ObjectListView(APIView):
 
 
 class RoomListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         rooms = Room.objects.all()
         serializer = RoomSerializer(rooms, many=True)
@@ -45,7 +45,7 @@ class RoomListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserRoomListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, userId):
         if request:
             rooms = Room.objects.select_related('td_model').filter(user=userId)
@@ -54,22 +54,22 @@ class UserRoomListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RoomObjectListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, roomId):
         objects = Object.objects.select_related('td_model', 'category').filter(room=roomId)
         serializer = ObjectSerializer(objects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, userId):
-        user = User.get_object_or_404(id=userId)
+        user = get_object_or_404(User, id=userId)
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserListView(APIView):
     def get(self, request):
-        self.permission_classes = [IsAuthenticated]
+        # self.permission_classes = [IsAuthenticated]
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -82,8 +82,36 @@ class UserListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ObjectImageListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, objectId):
         images = ObjectImage.objects.filter(object=objectId)
         serializer = ObjectImageSerializer(images, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class ObjectTextureListView(APIView):
+    # permission_classes = [IsAuthenticated]
+    def get(self, reqeuest, objectId):
+        textures = Texture.objects.filter(object=objectId)
+        serializer = TextureSerializer(textures, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class TextureListView(APIView):
+    # permission_classes = [IsAuthenticated]
+    def get(self, request):
+        textures = Texture.objects.all()
+        serializer = TextureSerializer(textures, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def post(self, request):
+        serializer = TextureSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class RoomView(APIView):
+    def delete(self, request, roomId):
+        room = get_object_or_404(Room, td_model=roomId)
+        room.delete()
+        return Response(status=status.HTTP_200_OK)

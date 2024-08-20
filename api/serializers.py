@@ -52,6 +52,7 @@ class ObjectImageSerializer(serializers.ModelSerializer):
         
 class ObjectSerializer(serializers.ModelSerializer):
     td_model = TDModelSerializer()
+    room = RoomSerializer(read_only=True)
     class Meta:
         model = Object
         fields = '__all__'
@@ -69,4 +70,3 @@ class TextureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Texture
         fields = '__all__'
-        

@@ -16,4 +16,7 @@ urlpatterns = [
     path('users', views.UserListView.as_view(), name='user_list'),
     path('objects/<int:objectId>/images', views.ObjectImageListView.as_view(), name='object_image_list'),
     path('rooms', views.RoomListView.as_view(), name='room_list'),
+    path('objects/<int:objectId>/textures', views.ObjectTextureListView.as_view(), name='object_texture_list'),
+    path('textures', view=views.TextureListView.as_view(), name='texture_list'),
+    path('rooms/<int:roomId>', view=views.RoomView.as_view(), name='room_view'),
 ]

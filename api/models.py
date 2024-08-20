@@ -40,7 +40,7 @@ class ObjectImage(models.Model):
 class Texture(models.Model):
     name = models.CharField('Texture Name', max_length=150)
     image = models.ImageField(upload_to='textures/')
-    object = models.ForeignKey(Object, on_delete=models.CASCADE, default=1)
+    object = models.ForeignKey(Object, on_delete=models.CASCADE)
     def __str__(self):
         return self.name
     

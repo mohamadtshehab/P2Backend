@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-3rujxnt61=u450vul)sq-rbytl!@1$xm6#w99btjk#nm-)r&(_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['30f1-169-150-196-137.ngrok-free.app']
+ALLOWED_HOSTS = ['f288-178-52-78-168.ngrok-free.app']
 
 
 # Application definition
@@ -42,9 +42,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'api',
     'debug_toolbar',
-    
-    
-    
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -148,8 +146,6 @@ INTERNAL_IPS = [
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
