@@ -32,9 +32,19 @@ class TDModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = TDModel
         fields = '__all__'
-        
+
+class ObjectImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ObjectImage
+        fields = '__all__'
+class TextureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Texture
+        fields = '__all__'
 class RoomSerializer(serializers.ModelSerializer):
     td_model = TDModelSerializer()
+    image = ObjectImageSerializer(read_only=True)
+    textures = TextureSerializer(read_only=True, many=True)
     class Meta:
         model = Room
         fields = '__all__'
@@ -45,28 +55,10 @@ class RoomSerializer(serializers.ModelSerializer):
         room = Room.objects.create(td_model=td_model, **validated_data)
         return room
         
-class ObjectImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ObjectImage
-        fields = '__all__'
+
         
 class ObjectSerializer(serializers.ModelSerializer):
-    td_model = TDModelSerializer()
-    room = RoomSerializer(read_only=True)
     class Meta:
         model = Object
         fields = '__all__'
     
-    def create(self, validated_data):
-        td_model_data = validated_data.pop('td_model')
-        td_model = TDModel.objects.create(**td_model_data)
-        
-        object_instance = Object.objects.create(td_model=td_model, **validated_data)
-        
-        return object_instance
-    
-
-class TextureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Texture
-        fields = '__all__'

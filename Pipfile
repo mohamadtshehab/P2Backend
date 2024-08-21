@@ -15,6 +15,7 @@ requests = "*"
 django-extensions = "*"
 graphviz = "*"
 httpx = "*"
+pudb = "*"
 
 [requires]
 python_version = "3.11"

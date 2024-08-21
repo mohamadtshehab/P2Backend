@@ -10,17 +10,10 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from p2.settings import NGROK_URL
-
-
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import *
-import requests
-from rest_framework.parsers import FileUploadParser
-import base64
-from p2.settings import NGROK_URL
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
+import pdb
+
 class ObjectView(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self, request, pk):
@@ -42,7 +35,6 @@ class ObjectListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class RoomListView(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -56,7 +48,7 @@ class RoomListView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class UserRoomListView(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self, request, userId):
@@ -122,7 +114,7 @@ class TextureListView(APIView):
         else:
             print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+ 
 class RoomView(APIView):
     def delete(self, request, roomId):
         room = get_object_or_404(Room, td_model=roomId)
@@ -131,7 +123,7 @@ class RoomView(APIView):
     
 '''
 Method:     POST
-url:        {host}/api/room/room_id/predict
+url:        {host}/api/objects/generation
 body:{
     'image': required,
     'name'
@@ -141,111 +133,87 @@ body:{
     'translation',
     'color',
     'type': required,
-    'category: required'
+    'category: required',
+    'room_id: required'
 }
 
 '''
 class ImageUploadView(APIView):
-    parser_class = (FileUploadParser,)
-    
-    def post(self, request, *args, **kwargs):
-        # try:
-        room_id = kwargs.get('room_id')
-        
-        # Convert the image file to bytes
-        image = request.data.get('image')
+    def post(self, request):
 
-        # Prepare the data to send to Flask
-        files = {'file': ('image.jpg', image)}
-
-        # Send the request to ngrok on colab
-        response = requests.post(f'{NGROK_URL}/predict', files=files)
-
-        print('1')
-        print(response)
-        print(response.status_code)
-        
-        if response.status_code == 200:
-            # Parse the JSON response from Flask
-            flask_response = response.json()
-        
-            print('2')
-        
-            # Decode the base64-encoded model data
-            model_base64 = flask_response.get('model_file')
-            model_binary_data = base64.b64decode(model_base64)
-        
-            print('3')
-        
-            # Generate a filename for the model file
-            model_filename = flask_response.get('model_path').split(sep='/tmp/')[-1]
-            # Save the decoded model data to a file in the static files directory
-            model_file_path = default_storage.save(f"objects/{model_filename}", ContentFile(model_binary_data))
-        
-            print('4')
-            print(model_file_path)
-        
-            # Save the TDModel data
-            # Create TDModel data
-            td_model_data = {
-                'name': request.data.get('name'), 
-                'description': request.data.get('description'), 
-                'type': request.data.get('type')
-            }
-            TDModel_serializer = TDModelSerializer(data=td_model_data)
-            TDModel_serializer.is_valid(raise_exception=True)
-            td_model = TDModel_serializer.save()
-
-            print('5')
-            # print(td_model)
-
-            # Get or create the Category instance
-            category_name = request.data.get('category')
-            category, _ = Category.objects.get_or_create(name=category_name)
-            
-            print('6')
-            print(category)
-
-            # Get the Room instance
-            room = Room.objects.get(td_model__id=room_id)
-            
-            print('7')
-            print(room)
-
-            # Save the Object instance
-            object_data = {
-                # 'td_model': td_model,
-                # 'category': category,
-                'room': room,
-                # 'file': model_file_path,
-                # 'material': model_file_path
-            }
-
-            print('8')
-            # print(object_data)
-
-            object_serializer = ObjectSerializer(data=object_data)
-            print('9')
-            if object_serializer.is_valid(raise_exception=True):
-                print('10')
-                object_instance = object_serializer.save(td_model=td_model)
-                # save the image of the created object
-                object_image_instance = ObjectImage.objects.create(object=object_instance, image=image)
-
-            print('11')
-            # print(object_image_instance)
-
-            # Return the response from Flask as the response of this view
-            return Response({
-                'model_path': object_instance.model_file_path,
-            }, status=status.HTTP_200_OK)
-        else:
+        response = self.handle_flask_post_request(request)
+        if response.status_code != 200:
             return Response({"error": "Failed to communicate with Flask app"}, status=status.HTTP_400_BAD_REQUEST)
-            # else:
-            #     return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # except Exception as e:
-        #     return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+        model, material, texture = self.format_flask_response_data(response)
+        
+
+        category_name = request.data.get('category')
+        category, _ = Category.objects.get_or_create(name=category_name)
+        
+
+        object_data = request.data.copy()
+        object_data['category'] = category.id
+        object_data['label'] = model.name
+        object_data['file'] = model
+        object_data['material'] = material
+        
+        td_model_data = {
+            'name': request.data.get('name'),
+            'description': request.data.get('description'),
+            'type': request.data.get('type'),
+        }
+        
+        td_model_serializer = TDModelSerializer(data=td_model_data)
+        td_model_serializer.is_valid(raise_exception=True)
+        td_model = td_model_serializer.save()
+        
+        object_data['td_model'] = td_model.id
+
+        object_serializer = ObjectSerializer(data=object_data)
+        object_serializer.is_valid(raise_exception=True)
+        object_instance = object_serializer.save()
+
+        ObjectImage.objects.create(object=object_instance, image=request.data['image'])
+        
+        Texture.objects.create(object=object_instance, name=texture.name, image=texture)
+        
+        return Response(object_serializer.data, status=status.HTTP_200_OK)
+
+    def handle_flask_post_request(self, request):
+        image = request.data.get('image')
+        flask_post_data = {'image': ('image.jpg', image)}
+        try:
+            response = requests.post(f'{NGROK_URL}/generate', files=flask_post_data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Error communicating with Flask service: {str(e)}")
+        return response
+    
+    def format_flask_response_data(self, response):
+        flask_response_data = response.json()
+        
+        model_name = flask_response_data.get('model_name')
+        material_name = model_name.split('.obj')[0] + '.mtl'
+        texture_name = model_name.split('.obj')[0] + '.png'
+        
+        encoded_model = flask_response_data.get('model')
+        decoded_model = base64.b64decode(encoded_model)
+        model = SimpleUploadedFile(model_name, decoded_model)
+        
+        encoded_material = flask_response_data.get('material')
+        decoded_material = base64.b64decode(encoded_material)
+        material = SimpleUploadedFile(material_name, decoded_material)
+        
+        encoded_texture = flask_response_data.get('texture')
+        decoded_texture = base64.b64decode(encoded_texture)
+        texture = SimpleUploadedFile(texture_name, decoded_texture)
+
+        return model, material, texture
+
+    
+    
+    
 class hi(APIView):
     def get(self, request):
         # Send the request to ngrok on colab

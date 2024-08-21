@@ -21,6 +21,6 @@ urlpatterns = [
     path('objects/<int:objectId>/textures', views.ObjectTextureListView.as_view(), name='object_texture_list'),
     path('textures', view=views.TextureListView.as_view(), name='texture_list'),
     path('rooms/<int:roomId>', view=views.RoomView.as_view(), name='room_view'),
-    path('rooms/<int:roomId>/predict', view=views.ImageUploadView.as_view(), name='predict'),
+    path('objects/generation', view=views.ImageUploadView.as_view(), name='generate'),
     path('hi', view=views.hi.as_view(), name='hi')
 ]
