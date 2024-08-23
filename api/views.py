@@ -9,7 +9,7 @@ import requests
 import base64
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from p2.settings import NGROK_URL
+from p2.settings import MULTIVIEW_NGROK_URL, MESH_NGROK_URL
 from django.shortcuts import get_object_or_404
 from django.core.files.uploadedfile import SimpleUploadedFile
 import pdb
@@ -138,89 +138,93 @@ body:{
 }
 
 '''
-class ImageUploadView(APIView):
+class ObjectGenerationView(APIView):
     def post(self, request):
-
-        response = self.handle_flask_post_request(request)
-        if response.status_code != 200:
-            return Response({"error": "Failed to communicate with Flask app"}, status=status.HTTP_400_BAD_REQUEST)
         
-        model, material, texture = self.format_flask_response_data(response)
+        # Send a multi-view-image-generation request to flask and receive its response
+        request_image = request.FILES['image']
+        url = f'{MULTIVIEW_NGROK_URL}/generate_multi_views'
+        image = {'image': ('image.png', request_image)}
+        try:
+            response = requests.post(url, files=image)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Error communicating with Flask service: {str(e)}")
         
-
-        category_name = request.data.get('category')
-        category, _ = Category.objects.get_or_create(name=category_name)
+        response_data = response.json()
         
-
-        object_data = request.data.copy()
-        object_data['category'] = category.id
-        object_data['label'] = model.name
-        object_data['file'] = model
-        object_data['material'] = material
+        # Store the multi-view image
+        encoded_image = response_data['image']
+        image_name = response_data['image_name']
+        decoded_image = base64.b64decode(encoded_image)
+        
+        # Send a 3D-object-generation request and receive its response
+        url = f'{MESH_NGROK_URL}/generate_mesh'
+        image = {'image': (image_name, decoded_image)}
+        try:
+            response = requests.post(url, files=image)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Error communicating with Flask service: {str(e)}")
+        response_data = response.json()
+        
+        # -----Store the 3D object------
+        # get data from response
+        encoded_model = response_data['model']
+        encoded_material = response_data['material']
+        encoded_texture = response_data['texture']
+        # get files' names
+        model_name = response_data['model_name']
+        material_name = model_name.split('.')[0] + '.mtl'
+        texture_name = model_name.split('.')[0] + '.png'
+        
+        # Save files into storage
+        decoded_model = base64.b64decode(encoded_model)
+        model = SimpleUploadedFile(model_name, decoded_model)
+            
+        decoded_material = base64.b64decode(encoded_material)
+        material = SimpleUploadedFile(material_name, decoded_material)
+        
+        decoded_texture = base64.b64decode(encoded_texture)
+        texture = SimpleUploadedFile(texture_name, decoded_texture)
+        
+        # Store td_model into database
+        td_model_name = request.data.get('name')
+        td_model_description = request.data.get('description')
+        td_model_type = request.data.get('type')
         
         td_model_data = {
-            'name': request.data.get('name'),
-            'description': request.data.get('description'),
-            'type': request.data.get('type'),
+            'name': td_model_name,
+            'description': td_model_description,
+            'type': td_model_type
         }
         
         td_model_serializer = TDModelSerializer(data=td_model_data)
         td_model_serializer.is_valid(raise_exception=True)
         td_model = td_model_serializer.save()
         
-        object_data['td_model'] = td_model.id
-
+        # Create category
+        category_name = request.data.get('category')
+        category, _ = Category.objects.get_or_create(name=category_name)
+        
+        # Get the id of the room containing the object
+        room_id = request.data.get('room')
+        
+        # Store the object in database
+        object_data = {
+            'label': model_name,
+            'td_model': td_model.id,
+            'category': category.id,
+            'room': room_id,
+            'file': model,
+            'material': material
+        }
         object_serializer = ObjectSerializer(data=object_data)
         object_serializer.is_valid(raise_exception=True)
         object_instance = object_serializer.save()
-
-        ObjectImage.objects.create(object=object_instance, image=request.data['image'])
         
-        Texture.objects.create(object=object_instance, name=texture.name, image=texture)
+        # Store texture and object image in database
+        Texture.objects.create(name=texture_name, image=texture, object=object_instance)
+        ObjectImage.objects.create(image=request_image, object=object_instance)
         
-        return Response(object_serializer.data, status=status.HTTP_200_OK)
-
-    def handle_flask_post_request(self, request):
-        image = request.data.get('image')
-        flask_post_data = {'image': ('image.jpg', image)}
-        try:
-            response = requests.post(f'{NGROK_URL}/generate', files=flask_post_data)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Error communicating with Flask service: {str(e)}")
-        return response
-    
-    def format_flask_response_data(self, response):
-        flask_response_data = response.json()
-        
-        model_name = flask_response_data.get('model_name')
-        material_name = model_name.split('.obj')[0] + '.mtl'
-        texture_name = model_name.split('.obj')[0] + '.png'
-        
-        encoded_model = flask_response_data.get('model')
-        decoded_model = base64.b64decode(encoded_model)
-        model = SimpleUploadedFile(model_name, decoded_model)
-        
-        encoded_material = flask_response_data.get('material')
-        decoded_material = base64.b64decode(encoded_material)
-        material = SimpleUploadedFile(material_name, decoded_material)
-        
-        encoded_texture = flask_response_data.get('texture')
-        decoded_texture = base64.b64decode(encoded_texture)
-        texture = SimpleUploadedFile(texture_name, decoded_texture)
-
-        return model, material, texture
-
-    
-    
-    
-class hi(APIView):
-    def get(self, request):
-        # Send the request to ngrok on colab
-        response = requests.get(f'{NGROK_URL}/hi')
-        
-        if response.status_code == 200:
-            # Parse the JSON response from Flask
-            flask_response = response.json()
-        
-        return Response(flask_response, status=status.HTTP_200_OK)
+        return Response(data=object_serializer.data, status=status.HTTP_200_OK)

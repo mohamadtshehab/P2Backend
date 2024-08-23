@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-3rujxnt61=u450vul)sq-rbytl!@1$xm6#w99btjk#nm-)r&(_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://9036-34-125-87-172.ngrok-free.app',
+ALLOWED_HOSTS = ['https://1975-34-168-231-59.ngrok-free.app',
+                 'https://784f-34-16-154-201.ngrok-free.app',
                  '127.0.0.1']
 
 
@@ -159,4 +160,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(hours=24),
 }
 
-NGROK_URL = ALLOWED_HOSTS[0]
+MULTIVIEW_NGROK_URL = ALLOWED_HOSTS[0]
+MESH_NGROK_URL = ALLOWED_HOSTS[1]
