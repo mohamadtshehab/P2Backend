@@ -1,4 +1,5 @@
 **/db.sqlite3
+**/p2.db
 **/__pycache__
 **/.vscode
 **/migrations
