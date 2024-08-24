@@ -14,8 +14,8 @@ factory-boy = "*"
 requests = "*"
 django-extensions = "*"
 graphviz = "*"
-requests = "*"
 httpx = "*"
+pudb = "*"
 
 [requires]
 python_version = "3.11"

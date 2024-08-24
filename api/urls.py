@@ -5,8 +5,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
 
-from api.views import (ImageUploadView, hi)
-
 urlpatterns = [
     path('token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
@@ -21,6 +19,5 @@ urlpatterns = [
     path('objects/<int:objectId>/textures', views.ObjectTextureListView.as_view(), name='object_texture_list'),
     path('textures', view=views.TextureListView.as_view(), name='texture_list'),
     path('rooms/<int:roomId>', view=views.RoomView.as_view(), name='room_view'),
-    path('rooms/<int:roomId>/predict', view=views.ImageUploadView.as_view(), name='predict'),
-    path('hi', view=views.hi.as_view(), name='hi')
+    path('objects/generation', view=views.ObjectGenerationView.as_view(), name='object_generation'),
 ]

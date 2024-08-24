@@ -25,12 +25,12 @@ class Room(models.Model):
     td_model = models.OneToOneField(TDModel, on_delete=models.CASCADE, primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 class Object(models.Model):
-    
+    label = models.CharField(max_length=150)
     td_model = models.OneToOneField(TDModel, on_delete=models.CASCADE, primary_key=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    file = models.FilePathField()
-    material = models.FilePathField()
+    file = models.FileField(upload_to='objects/')
+    material = models.FileField(upload_to='materials/')
     
     
 class ObjectImage(models.Model):
