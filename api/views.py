@@ -6,14 +6,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 import requests
 import base64
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-from p2.settings import MULTIVIEW_NGROK_URL, MESH_NGROK_URL, TEXT_NGROK_URL
+from p2.settings import MULTIVIEW_NGROK_URL, MESH_NGROK_URL
 from django.shortcuts import get_object_or_404
-from .helper import format_flask_response_data, handle_flask_image_post_request, handle_flask_text_post_request
+from .helper import format_flask_response_data, handle_flask_text_post_request
 from django.core.files.uploadedfile import SimpleUploadedFile
-from rest_framework.parsers import FileUploadParser
-import pdb
 
 class ObjectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -229,3 +225,20 @@ class ObjectGenerationView(APIView):
         
         return Response(data=object_serializer.data, status=status.HTTP_200_OK)
 
+'''
+Method:     POST
+url:        {host}/api/objects/generation_from_text
+body:{
+    'prompt': required,
+}
+'''
+class GenerateImageFromTextView(APIView):
+    def post(self, request):
+        # send the request to flask on colab
+        response = handle_flask_text_post_request(request)
+        if response.status_code != 200:
+            return Response({"error": "Failed to communicate with Flask app"}, status=status.HTTP_400_BAD_REQUEST)
+        # format the flask response 
+        image = format_flask_response_data(response)
+        
+        return Response(image, status=status.HTTP_200_OK)

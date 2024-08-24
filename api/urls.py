@@ -6,9 +6,8 @@ from rest_framework_simplejwt.views import (
 )
 
 from api.views import (
-    GenerateModelFromImageView,
-    GenerateImageFromTextView,
-    hi
+    ObjectGenerationView,
+    GenerateImageFromTextView
 )
 
 urlpatterns = [
@@ -26,6 +25,5 @@ urlpatterns = [
     path('textures', view=views.TextureListView.as_view(), name='texture_list'),
     path('rooms/<int:roomId>', view=views.RoomView.as_view(), name='room_view'),
     path('objects/generation', view=views.ObjectGenerationView.as_view(), name='object_generation'),
-    path('objects/generation_from_text', view=views.GenerateImageFromTextView.as_view(), name='generate_from_text'),
-    path('hi', view=views.hi.as_view(), name='hi')
+    path('objects/generation_from_text', view=views.GenerateImageFromTextView.as_view(), name='generate_image_from_text'),
 ]
